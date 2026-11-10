@@ -1,0 +1,12 @@
+const router = require('express').Router(); const { body, param, query } = require('express-validator');
+const authenticate = require('../middleware/authenticate'); const validate = require('../middleware/validateRequest'); const controller = require('../controllers/integrationController');
+const asyncHandler = require('../utils/asyncHandler');
+router.get('/oauth/error', asyncHandler(controller.oauthError));
+router.post('/slack/events', asyncHandler(controller.slackEvents));
+router.get('/oauth/:provider/callback', [param('provider').isString(), query('code').optional().isString(), query('state').optional().isString()], validate, (req, res, next) => { if (!req.query.code || !req.query.state) return res.redirect(`${require('../config/env').clientUrl}/integrations?error=OAUTH_FAILED`); controller.callback(req, res, next).catch(next); });
+router.use(authenticate);
+router.get('/', asyncHandler(controller.list)); router.get('/status', asyncHandler(controller.status));
+router.get('/oauth/:provider/start', [param('provider').isString()], validate, asyncHandler(controller.start));
+router.post('/', [body('provider').isIn(['gmail', 'slack', 'discord', 'google-sheets', 'openrouter', 'gemini']), body('accessToken').isString().notEmpty(), body('refreshToken').optional().isString(), body('scopes').optional().isArray()], validate, asyncHandler(controller.save));
+router.delete('/:provider', [param('provider').isString()], validate, asyncHandler(controller.disconnect));
+module.exports = router;

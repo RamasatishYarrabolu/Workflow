@@ -1,0 +1,3 @@
+const mongoose = require('mongoose');
+const schema = new mongoose.Schema({ execution: { type: mongoose.Schema.Types.ObjectId, ref: 'Execution', required: true, index: true }, workflow: { type: mongoose.Schema.Types.ObjectId, ref: 'Workflow', required: true }, nodeId: String, agent: { type: String, enum: ['planner', 'execution', 'validation', 'recovery', 'monitoring', 'system'], required: true }, level: { type: String, enum: ['info', 'warning', 'error', 'success'], default: 'info' }, eventType: { type: String, required: true }, message: { type: String, required: true }, metadata: mongoose.Schema.Types.Mixed }, { timestamps: true });
+module.exports = mongoose.models.ExecutionLog || mongoose.model('ExecutionLog', schema);

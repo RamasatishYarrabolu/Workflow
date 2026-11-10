@@ -1,0 +1,24 @@
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const compression = require('compression');
+const morgan = require('morgan');
+const env = require('./config/env');
+const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+app.use(helmet());
+app.use(cors({ origin: env.clientUrl, credentials: true }));
+app.use(compression());
+app.use(express.json({ limit: '1mb', verify: (req, _res, buffer) => { req.rawBody = buffer; } }));
+if (env.nodeEnv !== 'test') app.use(morgan((tokens, req, res) => `${tokens.method(req, res)} ${req.path} ${tokens.status(req, res)} ${tokens['response-time'](req, res)} ms`));
+app.use('/api/health', require('./routes/healthRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/workflows', require('./routes/generationRoutes'));
+app.use('/api/workflows', require('./routes/workflowRoutes'));
+app.use('/api/executions', require('./routes/executionRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/integrations', require('./routes/integrationRoutes'));
+app.use((_req, res) => res.status(404).json({ message: 'Route not found.' }));
+app.use(errorHandler);
+module.exports = app;

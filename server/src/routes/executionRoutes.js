@@ -1,0 +1,12 @@
+const router = require('express').Router(); const { param, body, query } = require('express-validator');
+const authenticate = require('../middleware/authenticate'); const validate = require('../middleware/validateRequest'); const controller = require('../controllers/executionController');
+const asyncHandler = require('../utils/asyncHandler');
+router.use(authenticate);
+router.get('/', [query('page').optional().isInt({ min: 1 }), query('limit').optional().isInt({ min: 1, max: 100 })], validate, asyncHandler(controller.list));
+router.get('/:id/timeline', [param('id').isMongoId()], validate, asyncHandler(controller.timeline));
+router.get('/:id', [param('id').isMongoId()], validate, asyncHandler(controller.detail));
+router.post('/:id/pause', [param('id').isMongoId()], validate, asyncHandler(controller.pause));
+router.post('/:id/resume', [param('id').isMongoId()], validate, asyncHandler(controller.resume));
+router.post('/:id/cancel', [param('id').isMongoId()], validate, asyncHandler(controller.cancel));
+router.post('/:id/retry', [param('id').isMongoId()], validate, asyncHandler(controller.retry));
+module.exports = router;

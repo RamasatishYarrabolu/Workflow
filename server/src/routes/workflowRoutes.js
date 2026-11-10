@@ -1,0 +1,16 @@
+const router = require('express').Router();
+const { body, param, query } = require('express-validator');
+const authenticate = require('../middleware/authenticate');
+const validate = require('../middleware/validateRequest');
+const controller = require('../controllers/workflowController');
+const asyncHandler = require('../utils/asyncHandler');
+router.use(authenticate);
+router.get('/dashboard', asyncHandler(controller.dashboard));
+router.get('/', [query('page').optional().isInt({ min: 1 }), query('limit').optional().isInt({ min: 1, max: 100 })], validate, asyncHandler(controller.list));
+router.post('/', [body('name').trim().isLength({ min: 1, max: 120 }), body('nodes').optional().isArray(), body('edges').optional().isArray(), body('tags').optional().isArray()], validate, asyncHandler(controller.create));
+router.get('/:id', [param('id').isMongoId()], validate, asyncHandler(controller.get));
+router.put('/:id', [param('id').isMongoId(), body('name').optional().trim().isLength({ min: 1, max: 120 }), body('description').optional().isString().isLength({ max: 4000 }), body('status').optional().isIn(['draft', 'active', 'paused', 'archived']), body('trigger').optional().isObject(), body('nodes').optional().isArray(), body('edges').optional().isArray(), body('tags').optional().isArray()], validate, asyncHandler(controller.update));
+router.post('/:id/duplicate', [param('id').isMongoId()], validate, asyncHandler(controller.duplicate));
+router.post('/:id/execute', [param('id').isMongoId(), require('express-validator').body('input').optional().isObject()], validate, asyncHandler(require('../controllers/executionController').start));
+router.delete('/:id', [param('id').isMongoId()], validate, asyncHandler(controller.remove));
+module.exports = router;

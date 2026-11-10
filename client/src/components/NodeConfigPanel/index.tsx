@@ -1,0 +1,6 @@
+import type { Node } from "@xyflow/react"; import { X } from "lucide-react";
+export default function NodeConfigPanel({ node, onChange, onClose }: { node: Node<any> | null; onChange: (nodeId: string, data: any) => void; onClose: () => void }) {
+  if (!node) return <aside className="config-panel"><p className="config-empty">Select a node to configure its settings.</p></aside>;
+  const config = node.data.config || {};
+  return <aside className="config-panel"><div className="config-heading"><div><p className="eyebrow">NODE SETTINGS</p><h3>{node.data.label}</h3></div><button className="icon-button" onClick={onClose}><X size={17} /></button></div><label className="config-label">Display name<input value={node.data.label || ""} onChange={(e) => onChange(node.id, { ...node.data, label: e.target.value })} /></label><p className="config-type">{node.type}</p>{Object.entries(config).map(([key, value]) => <label className="config-label" key={key}>{key}<textarea rows={key === "body" || key === "message" || key === "prompt" ? 4 : 2} value={typeof value === "string" ? value : JSON.stringify(value)} onChange={(e) => { let next: any = e.target.value; if (Array.isArray(value) || (typeof value === "object" && value !== null)) { try { next = JSON.parse(next); } catch {} } onChange(node.id, { ...node.data, config: { ...config, [key]: next } }); }} /></label>)}</aside>;
+}

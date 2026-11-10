@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const { body } = require('express-validator');
+const authenticate = require('../middleware/authenticate');
+const validate = require('../middleware/validateRequest');
+const controller = require('../controllers/generationController');
+const asyncHandler = require('../utils/asyncHandler');
+router.use(authenticate);
+router.get('/catalog', controller.catalog);
+router.post('/generate', [body('prompt').trim().isLength({ min: 5, max: 4000 })], validate, asyncHandler(controller.generate));
+module.exports = router;
